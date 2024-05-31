@@ -11,12 +11,20 @@ import org.springframework.mail.javamail.JavaMailSender;
  */
 @ConfigurationProperties(prefix = "mail")
 @Getter
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
 class MailProperties {
 
     /**
      * Email address that the email should be sent from.
      */
     private final String from;
+
+    MailProperties(String from) {
+        this.from = from;
+    }
+
+    public String getFrom() {
+        return from;
+    }
 
 }

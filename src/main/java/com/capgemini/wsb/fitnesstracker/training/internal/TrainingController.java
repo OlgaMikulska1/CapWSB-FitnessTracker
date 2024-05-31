@@ -5,6 +5,7 @@ import com.capgemini.wsb.fitnesstracker.training.api.TrainingProvider;
 //import lombok.RequiredArgsConstructor;
 import com.capgemini.wsb.fitnesstracker.user.api.User;
 import com.capgemini.wsb.fitnesstracker.user.api.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,55 +17,36 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/v1/trainings")
-//@RequiredArgsConstructor
 public class TrainingController {
 
+    @Autowired
     private final TrainingProvider trainingProvider;
+    @Autowired
     private final TrainingServiceImpl trainingService;
+   @Autowired
+    private final TrainingRepository trainingRepository;
 
+   @Autowired
     private final UserService userService;
 
 
-    public TrainingController(TrainingProvider trainingProvider, TrainingServiceImpl trainingService, UserService userService) {
+    public TrainingController(TrainingProvider trainingProvider, TrainingServiceImpl trainingService, TrainingRepository trainingRepository, UserService userService) {
         this.trainingProvider = trainingProvider;
         this.trainingService = trainingService;
+        this.trainingRepository = trainingRepository;
         this.userService = userService;
     }
-
-//    @PostMapping
-//    public ResponseEntity<Training> createTraining(@RequestBody Training training) {
-////        User user = training.setUser(user);
-////        Training createdTraining = trainingProvider.createTraining(training);
-////        return ResponseEntity.status(HttpStatus.CREATED).body(createdTraining);
-//        // Pobierz użytkownika na podstawie ID z treningu
-//        Optional<User> userId = userService.getUserId(); // Załóżmy, że masz metodę getUserId() w klasie Training
-//        Optional<User> user = userService.getUser(userId); // Przykładowe wywołanie serwisu userService do pobrania użytkownika
-//
-//        if (user == null) {
-//            // Jeśli użytkownik o danym ID nie został znaleziony, zwróć odpowiedź 404 Not Found
-//            return ResponseEntity.notFound().build();
-//        }
-//
-//        // Przypisz użytkownika do treningu
-//        training.setUser(user);
-//
-//        // Zapisz trening z przypisanym użytkownikiem
-//        Training createdTraining = trainingProvider.createTraining(training);
-//
-//        // Zwróć odpowiedź 201 Created z zapisanym treningiem
-//        return ResponseEntity.status(HttpStatus.CREATED).body(createdTraining);
-//    }
-
-//    @PostMapping
-//    public ResponseEntity<Training> createTraining(@RequestBody Training training) {
-//        Training createdTraining = trainingProvider.createTraining(training);
-//        return ResponseEntity.status(HttpStatus.CREATED).body(createdTraining);
-//    }
 
     @PostMapping
     public ResponseEntity<Training> createTraining(@RequestBody TrainingRequest trainingRequest) {
         User user = userService.getUserById(trainingRequest.getUserId());
-        Training training = new Training(
+        Training training = buildTraining(trainingRequest, user);
+        Training createdTraining = trainingProvider.createTraining(training);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdTraining);
+    }
+
+    private Training buildTraining(TrainingRequest trainingRequest, User user) {
+        return new Training(
                 user,
                 trainingRequest.getStartTime(),
                 trainingRequest.getEndTime(),
@@ -72,9 +54,8 @@ public class TrainingController {
                 trainingRequest.getDistance(),
                 trainingRequest.getAverageSpeed()
         );
-        Training createdTraining = trainingProvider.createTraining(training);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdTraining);
     }
+
 
 
     @GetMapping
@@ -82,14 +63,6 @@ public class TrainingController {
         List<Training> trainings = trainingProvider.getAllTrainings();
         return ResponseEntity.ok(trainings);
     }
-
-//    @GetMapping("/{userId}")
-//    public ResponseEntity<List<Training>> getTrainings(@PathVariable Long Id) {
-////        Training training = trainingProvider.getTraining(Id)
-////                .orElseThrow(() -> new TrainingNotFoundException(userId));
-////        return ResponseEntity.ok(training);
-//        return trainingService.getTrainingsForUser(userId);
-//    }
 
     @GetMapping("/{userId}")
     public List<Training> getTrainings(@PathVariable Long userId) {
@@ -106,6 +79,20 @@ public class TrainingController {
     public ResponseEntity<List<Training>> getTrainingsByActivityType(@RequestParam ActivityType activityType) {
         List<Training> trainings = trainingService.getTrainingsByActivityType(activityType);
         return ResponseEntity.ok(trainings);
+    }
+
+
+    @PutMapping("/{trainingId}")
+    public ResponseEntity<Training> updateTraining(@PathVariable Long trainingId, @RequestBody Training updatedTraining) {
+        Optional<Training> optionalTraining = trainingRepository.findById(trainingId);
+
+        if (optionalTraining.isPresent()) {
+            updatedTraining.setUser(optionalTraining.get().getUser());
+            updatedTraining.setTrainingId(trainingId);
+            return ResponseEntity.ok(trainingRepository.save(updatedTraining));
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
 

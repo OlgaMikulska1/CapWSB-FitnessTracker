@@ -1,5 +1,9 @@
 package com.capgemini.wsb.fitnesstracker.mail.api;
 
+import com.capgemini.wsb.fitnesstracker.training.api.Training;
+
+import java.util.List;
+
 /**
  * API interface for component responsible for sending emails.
  */
@@ -10,6 +14,6 @@ public interface EmailSender {
      *
      * @param email information on email to be sent
      */
-    void send(EmailDto email);
+    void send(List<Training> email);
 
 }

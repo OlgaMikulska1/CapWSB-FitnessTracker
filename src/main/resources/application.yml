@@ -1,4 +1,20 @@
 spring:
+#  nowe
+mail:
+  from: no-reply@example.com
+  host: sandbox.smtp.mailtrap.io
+  port: 2525
+  username: 86f6404c877011
+  password: 85877ded65d25e
+  properties:
+    mail:
+      smtp:
+        auth: true
+        starttls:
+          enable: true
+        user: 86f6404c877011   # Dodaj nazwę użytkownika
+        password: 85877ded65d25e   # Dodaj hasło
+        auth-method: PLAIN
   datasource:
     url: "jdbc:h2:mem:testdb"
     driver-class-name: "org.h2.Driver"

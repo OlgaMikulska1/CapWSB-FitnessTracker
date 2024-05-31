@@ -2,6 +2,7 @@ package com.capgemini.wsb.fitnesstracker.user.internal;
 
 import com.capgemini.wsb.fitnesstracker.user.api.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,8 +18,10 @@ import java.util.stream.Collectors;
 @RequestMapping("/v1/users")
 class UserController {
 
+    @Autowired
     private final UserServiceImpl userService;
 
+    @Autowired
     private final UserMapper userMapper;
 
     UserController(UserServiceImpl userService, UserMapper userMapper) {
