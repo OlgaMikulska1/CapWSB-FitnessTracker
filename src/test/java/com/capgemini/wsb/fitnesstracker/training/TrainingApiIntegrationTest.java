@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -172,7 +171,7 @@ class TrainingApiIntegrationTest extends IntegrationTestBase {
                 "averageSpeed": 0.0
                 }
                 """;
-        mockMvc.perform(put("/v1/trainings/{trainingId}", training1.getId()).contentType(MediaType.APPLICATION_JSON).content(requestBody))
+        mockMvc.perform(put("/v1/trainings/{trainingId}", training1.getTrainingId()).contentType(MediaType.APPLICATION_JSON).content(requestBody))
                 .andDo(log())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.user.id").value(user1.getId()))

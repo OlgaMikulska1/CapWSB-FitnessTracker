@@ -43,13 +43,13 @@ class InitialDataLoader {
     public void loadInitialData(ContextRefreshedEvent event) {
         verifyDependenciesAutowired();
 
-        log.info("Loading initial data to the database");
+        System.out.println("Loading initial data to the database");
 
         List<User> sampleUserList = generateSampleUsers();
         List<Training> sampleTrainingList = generateTrainingData(sampleUserList);
 
 
-        log.info("Finished loading initial data");
+        System.out.println("Finished loading initial data");
     }
 
     private User generateUser(String name, String lastName, int age) {
