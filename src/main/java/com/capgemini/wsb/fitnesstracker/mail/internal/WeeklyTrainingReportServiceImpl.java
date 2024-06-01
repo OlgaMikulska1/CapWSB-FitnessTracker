@@ -35,9 +35,8 @@ public class WeeklyTrainingReportServiceImpl implements UserProvider {
         return userRepository.findAll();
     }
 
-//    @Scheduled(cron = "0 0 0 * * SUN") // co tydzień w niedzielę o północy
-//    @Scheduled(cron = "0 35 20 * * FRI") // co piątek o 20:35
-    @Scheduled(cron = "0/30 * * * * ?")
+
+    @Scheduled(cron = "0 35 20 * * FRI") // co piątek o 20:35
     public void sendWeeklyTrainingReports() {
         List<User> users = userProvider.findAllUsers();
 

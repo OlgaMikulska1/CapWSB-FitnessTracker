@@ -24,7 +24,7 @@ public class EmailSenderImpl implements EmailSender {
 
     @Override
     public void send(List<Training> email) {
-        String toAddress = "sandbox.smtp.mailtrap.io";  // Replace with actual recipient logic
+        String toAddress = "sandbox.smtp.mailtrap.io";
         String subject = "Weekly Training Report";
         String content = generateReportContent(email);
 

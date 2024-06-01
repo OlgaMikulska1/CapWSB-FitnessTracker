@@ -24,7 +24,6 @@ import static org.mockito.Mockito.when;
 
 @Transactional
 class TrainingServiceImplTest {
-    private TrainingServiceImpl trainingService;
 
     private TrainingProvider trainingProvider;
 
@@ -36,94 +35,100 @@ class TrainingServiceImplTest {
     private Training training3;
     private Training training4;
 
+@BeforeEach
+public void setUp() {
+    MockitoAnnotations.initMocks(this);
+    trainingProvider = new TrainingServiceImpl(trainingRepository);
 
-    @BeforeEach
-    public void setUp() {
-        MockitoAnnotations.initMocks(this);
-        trainingProvider = new TrainingServiceImpl(trainingRepository);
+    User user1 = new User("Marek", "Mostowiak", LocalDate.of(1975, 4, 1), "marek.mostowiak@example.com");
+    User user2 = new User("Kinga", "Zduńska", LocalDate.of(1985, 3, 15), "kinga.zdunska@example.com");
+    User user3 = new User("Grażyna", "Łagoda", LocalDate.of(1982, 11, 26), "grazyna.lagoda@example.com");
 
-        User user1 = new User("Jan", "Kowalski", LocalDate.of(1990, 5, 15), "jan.kowalski@gmail.com");
-        User user2 = new User("Anna", "Nowak", LocalDate.of(1985, 9, 20), "anna.nowak@gmail.com");
+    Date startTime = new Date();
 
-        Date startTime = new Date();
+    Date endTime1 = new Date(startTime.getTime() + 15000);
+    Date endTime2 = new Date(startTime.getTime() + 25000);
+    Date endTime3 = new Date(startTime.getTime() + 35000);
+    Date endTime4 = new Date(startTime.getTime() + 60000);
 
-        Date endTime1 = new Date(startTime.getTime() + 10000);
-        Date endTime2 = new Date(startTime.getTime() + 20000);
-        Date endTime3 = new Date(startTime.getTime() + 30000);
-        Date endTime4 = new Date(startTime.getTime() + 50000);
+    training1 = new Training(user2, startTime, endTime1, ActivityType.SWIMMING, 1.0, 2.0);
+    training2 = new Training(user1, startTime, endTime2, ActivityType.RUNNING, 10.0, 8.5);
+    training3 = new Training(user3, startTime, endTime3, ActivityType.CYCLING, 20.0, 15.0);
+    training4 = new Training(user1, startTime, endTime4, ActivityType.WALKING, 2.0, 3.5);
+}
 
-        training1 = new Training(user1, startTime, endTime1, ActivityType.RUNNING, 5.0, 10.0);
-        training2 = new Training(user1, startTime, endTime2, ActivityType.CYCLING, 45.0, 20.0);
-        training3 = new Training(user2, startTime, endTime3, ActivityType.WALKING, 3.0, 5.0);
-        training4 = new Training(user1, startTime, endTime4, ActivityType.RUNNING, 15.0, 8.0);
-
-    }
 
     @Test
-    void testCreateTraining() {
-
+    void shouldCreateTrainingSuccessfully() {
+        // Przygotowanie
         when(trainingRepository.save(training1)).thenReturn(training1);
 
-        Training createdTraining = trainingService.createTraining(training1);
+        // Działanie
+        Training createdTraining = trainingProvider.createTraining(training1);
 
+        // Asercja
         assertEquals(training1, createdTraining);
-
     }
 
     @Test
-    void findAllTrainings() {
+    void shouldFindAllTrainings() {
+        // Przygotowanie
+        List<Training> expectedTrainings = Arrays.asList(training1, training2, training3);
+        when(trainingRepository.findAll()).thenReturn(expectedTrainings);
 
-        List<Training> trainings = Arrays.asList(training1, training2, training3);
+        // Działanie
+        List<Training> foundTrainings = trainingProvider.getAllTrainings();
 
-        when(trainingRepository.findAll()).thenReturn(trainings);
-
-        List<Training> allTrainings = trainingProvider.getAllTrainings();
-
-        assertEquals(trainings, allTrainings);
-
+        // Asercja
+        assertEquals(expectedTrainings, foundTrainings);
     }
 
     @Test
-    void findAllTrainingsByUserId() {
-
+    void shouldFindAllTrainingsForUserId() {
+        // Przygotowanie
         Long userId = 1L;
-
         when(trainingRepository.findByUserId(userId)).thenReturn(Arrays.asList(training1, training2, training4));
 
-        Iterable<Training> user1Trainings = trainingProvider.getTrainingsForUser(userId);
+        // Działanie
+        Iterable<Training> userTrainings = trainingProvider.getTrainingsForUser(userId);
+        List<Training> userTrainingList = (List<Training>) userTrainings;
 
-        assertEquals(3, ((List<Training>) user1Trainings).size());
-        assertTrue(((List<Training>) user1Trainings).contains(training1));
-        assertTrue(((List<Training>) user1Trainings).contains(training2));
-        assertTrue(((List<Training>) user1Trainings).contains(training4));
-
+        // Asercja
+        assertEquals(3, userTrainingList.size());
+        assertTrue(userTrainingList.contains(training1));
+        assertTrue(userTrainingList.contains(training2));
+        assertTrue(userTrainingList.contains(training4));
     }
 
     @Test
     void findAllCompletedTrainingsAfterDate() {
-
+        // Przygotowane
         Date date = new Date();
-
         when(trainingRepository.findByEndTimeAfter(date)).thenReturn(Arrays.asList(training1, training2, training4));
-        Iterable<Training> user1Trainings = trainingProvider.getFinishedTrainingsAfterTime(date);
 
-        assertEquals(3, ((List<Training>) user1Trainings).size());
-        assertTrue(((List<Training>) user1Trainings).contains(training1));
-        assertTrue(((List<Training>) user1Trainings).contains(training2));
-        assertTrue(((List<Training>) user1Trainings).contains(training4));
+        // Działanie
+        Iterable<Training> completedTrainings = trainingProvider.getFinishedTrainingsAfterTime(date);
+        List<Training> completedTrainingList = (List<Training>) completedTrainings;
 
+        // Asercja
+        assertEquals(3, completedTrainingList.size());
+        assertTrue(completedTrainingList.contains(training1));
+        assertTrue(completedTrainingList.contains(training2));
+        assertTrue(completedTrainingList.contains(training4));
     }
 
     @Test
-    void findAllTrainingsByActivityType() {
-
+    void shouldFindAllTrainingsForGivenActivityType() {
+        // Przygotowanie
         ActivityType activityType = ActivityType.RUNNING;
         when(trainingRepository.findByActivityType(activityType)).thenReturn(Arrays.asList(training1, training4));
 
-        List<Training> trainings = trainingProvider.getTrainingsByActivityType(activityType);
+        // Działanie
+        List<Training> foundTrainings = trainingProvider.getTrainingsByActivityType(activityType);
 
-        assertEquals(2, trainings.size());
-        assertTrue(trainings.contains(training1));
-        assertTrue(trainings.contains(training4));
+        // Asercja
+        assertEquals(2, foundTrainings.size());
+        assertTrue(foundTrainings.contains(training1));
+        assertTrue(foundTrainings.contains(training4));
     }
 }
